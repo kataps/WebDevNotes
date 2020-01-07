@@ -1,0 +1,73 @@
+##INSTALLING SSL In LINUX SERVER / APACHE WEBSERVER
+
+SSL stands for Secure Sockets Layer, the protocol which provides the encryption. SSL Certificates provide secure, encrypted communications between a website and an internet browser. SSL Certificates are typically installed on pages that require end-users to submit sensitive information over the internet like credit card details or passwords. SSL certificate used to secure our web site and web app.
+
+Steps to install SSL Certificate on Linux(Ubuntu/Debian) Apache Web Server.
+Step1: Install OpenSSL on Linux
+OpenSSL is a software library to be used in applications that need to secure communication over the internet.
+To install on Ubuntu/Debian run the following command
+      sudo apt-get update
+      sudo apt-get install openssl
+
+Step2: Generate Key and CSR for certificate request
+CSR stands for Certificate Signing request, To generate server key file run the following command, replace example.com to your domain name on which you want to install ssl certificate.
+       openssl genrsa -out example.com.key 2048
+Generate CSR file you may run the following command
+      openssl req -new -sha256 -key example.com.key -out example.com.csr
+When you will run the above command it will ask your information like
+Country: IN  
+State / Province: XYZ
+City: XYZ
+Department:XYZ
+Organization: XYZ
+Common Name: www.example.com
+
+*Fill your details and hit enter, In Country provide two digit of your country code(example India: IN, USA: US etc ) 
+
+Download these two file(example.com.key and example.com.csr) and submit submit it to certificate provider, Than they will issue certificate.
+The certificate should contains two file .crt and .ca-bundle or bundle.crt
+Put your certificate file, bundle file and key file in the directory /etc/ssl/certs/
+SSLCertificateFile  --- Certificate file
+SSLCertificateKeyFile --- Server key file
+SSLCertificateChainFile --- bundle file
+
+step3: Configuration of Certificate in Apache web server
+Add the virtual host in apache
+sudo nano /etc/apache2/site-enabled/000-default.conf
+virtual host like
+
+＜VirtualHost *:443＞
+         ServerAdmin admin@example.com
+         DocumentRoot /var/www/html
+         ServerName example.com
+          ServerAlias www.example.com
+         SSLEngine on
+         SSLCertificateFile /etc/ssl/certs/example.com.crt
+         SSLCertificateKeyFile /etc/ssl/certs/example.com.key
+         SSLCertificateChainFile /etc/ssl/certs/example_bundle.crt
+         ＜Directory /var/www/html＞
+                Options FollowSymLinks
+                AllowOverride All
+        ＜/Directory＞
+＜/VirtualHost＞
+
+
+#Redirect all http traffic to https
+
+＜VirtualHost *:80＞
+      ServerName example.com
+      ServerAlias www.example.com
+      Redirect permanent / https://www.example.com
+＜/VirtualHost＞
+
+Now enable SSL Mode in apache
+       sudo a2enmod ssl
+Restart apache services
+       sudo service apache2 restart
+
+Step4: Test
+Open your website URL in web browser eg. example.com or www.example.com
+
+
+//Youtube Reference 
+https://www.youtube.com/watch?v=m06TttS2ZAM
